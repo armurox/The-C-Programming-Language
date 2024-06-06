@@ -1,10 +1,14 @@
 #include <stdio.h>
 
+#define STEP 20
+#define UPPER 300
+#define LOWER 0
+
 int main(void)
 {
     /* Print Fahrenheit to Celsius table */
     printf("%3c%10c\n", 'c', 'f');
-    for (float fahr = 0; fahr <= 300; fahr += 20)
+    for (float fahr = LOWER; fahr <= UPPER; fahr += STEP)
     {
         printf("%3.0f\t%6.1f\n", fahr, (5.0 / 9.0) * (fahr - 32.0));
     }
