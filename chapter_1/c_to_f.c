@@ -2,6 +2,7 @@
 
 int main(void)
 {
+    /* Print Celsius to Fahrenheit table */
     printf("%3c%7c\n", 'f', 'c');
     for (float cels = 0; cels <= 148.9; cels += 11.1)
     {
