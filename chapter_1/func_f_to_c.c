@@ -1,0 +1,22 @@
+#include <stdio.h>
+
+#define STEP 20
+#define UPPER 300
+#define LOWER 0
+
+float convert_f_to_c(float fahr);
+
+int main(void)
+{
+    /* Print Fahrenheit to Celsius table */
+    printf("%3c%10c\n", 'c', 'f');
+    for (float fahr = LOWER; fahr <= UPPER; fahr += STEP)
+    {
+        printf("%3.0f\t%6.1f\n", fahr, convert_f_to_c(fahr));
+    }
+}
+
+float convert_f_to_c(float fahr)
+{
+    return (5.0 / 9.0) * (fahr - 32.0);
+}
