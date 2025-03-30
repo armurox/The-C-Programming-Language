@@ -6,7 +6,7 @@
 
 int main(void)
 {
-    printf("%5c %4c\n", 'F', 'C');
+    printf("%5c %4c\n", 'C', 'F');
     for (float c = MIN_C; c <= MAX_C; c += STEP_SIZE)
         printf("%5.1f %4.0f\n", c, (int) ((9.0 / 5.0) * c) + 32.0);
 }
