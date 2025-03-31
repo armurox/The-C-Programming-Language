@@ -38,6 +38,7 @@ int main(int argc, char **argv)
         }
     }
 
+    fclose(f);
     printf("No. of characters: %ld\nNo. of words: %ld\nNo. of lines: %d\n", nc, nw, nl);
 
 }
