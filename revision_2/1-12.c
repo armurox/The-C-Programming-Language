@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
     if (argc != 2)
     {
-        printf("Usage: ./wc [FILENAME]\n");
+        printf("Usage: ./a.out [FILENAME]\n");
         return 1;
     }
 
