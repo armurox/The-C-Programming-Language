@@ -20,12 +20,7 @@ int main(void)
         {
             spaces_left_to_first_tab_stop = N - (character_count % N);
             spaces_count -= spaces_left_to_first_tab_stop;
-            while (spaces_count >= 0)
-            {
-                tab_count += 1;
-                spaces_count -= N;
-            }
-
+            tab_count = spaces_count / N;
             for (int i = 0; i < tab_count; i++)
             {
                 putchar('\t');
@@ -33,7 +28,7 @@ int main(void)
             }
 
             if (tab_count)
-                spaces_count += N;
+                spaces_count %= N;
             else
                 spaces_count += spaces_left_to_first_tab_stop;
                 
