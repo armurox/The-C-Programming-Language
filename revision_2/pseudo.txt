@@ -1,0 +1,6 @@
+Read line by line, rather than character by character
+If first two characters are // skip entire line
+
+If // inside it, skip rest of characters, but print newline
+
+If starting with /* ,set a state. ignore every line, until the last 2 / third last and second last (because of newline) are */, then leave state
