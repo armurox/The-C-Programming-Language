@@ -32,8 +32,13 @@ int main(int argc, char **argv)
     char line[MAX_LINE_LENGTH];
     int state = OUT_OF_COMMENT;
     int line_len;
+    int num_lines = 0;
     while ((line_len = _getline_without_comments(line, MAX_LINE_LENGTH, f, &state)) != EOF)
+    {
         _printline(line, line_len);
+        num_lines++;
+    }
+    printf("\n\nNumber of lines without comment was %d\n", num_lines + 1);
     fclose(f);
 }
 
