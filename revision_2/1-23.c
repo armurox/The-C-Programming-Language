@@ -3,8 +3,10 @@
 #define IN_COMMENT 1
 #define OUT_OF_COMMENT 0
 #define MAX_LINE_LENGTH 1000
+#define IN_STRING 1
+#define OUT_OF_STRING 0
 
-int _getline_without_comments(char line[], int limit, FILE *f, int *state);
+int _getline_without_comments(char line[], int limit, FILE *f, int *state, int *string_state);
 void _printline(char line[], int line_len);
 
 /*
@@ -31,14 +33,15 @@ int main(int argc, char **argv)
 
     char line[MAX_LINE_LENGTH];
     int state = OUT_OF_COMMENT;
+    int string_state = OUT_OF_STRING;
     int line_len;
-    while ((line_len = _getline_without_comments(line, MAX_LINE_LENGTH, f, &state)) != EOF)
+    while ((line_len = _getline_without_comments(line, MAX_LINE_LENGTH, f, &state, &string_state)) != EOF)
         _printline(line, line_len);
     fclose(f);
 }
 
 
-int _getline_without_comments(char line[], int limit, FILE *f, int *state)
+int _getline_without_comments(char line[], int limit, FILE *f, int *state, int *string_state)
 {
     int i, c;
     int found_non_blank = 0;
