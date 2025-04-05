@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     FILE *f = fopen(argv[1], "r");
     if (f == NULL)
     {
-        printf("Could not find / open file %s!", argv[1]);
+        printf("Could not find // open file %s!", argv[1]);
         return 2;
     }
 
@@ -56,62 +56,80 @@ int _getline_without_comments(char line[], int limit, FILE *f, int *state, int *
         // Skip lines starting with a comment, no newline needed. This is the // case
         if (i > 0 && line[i - 1] == '/' && c == '/' && *state != IN_COMMENT)
         {
-            if (!found_non_blank)
+            if (*string_state != IN_STRING)
             {
-                i = 0;
-                line[i] = '\0';
-                while ((c = fgetc(f)) != EOF && c != '\n') // Consume rest of line
-                    ;
-                return i;
-            }
+                if (!found_non_blank)
+                {
+                    i = 0;
+                    line[i] = '\0';
+                    while ((c = fgetc(f)) != EOF && c != '\n') // Consume rest of line
+                        ;
+                    return i;
+                }
 
-            else if (line[i - 2] != '\t' || line[i - 2] != ' ' || line[i - 2] != '\b') /* Won't give a segmentation fault, 
-            as we know at least one non blank character was // found */
-            {
-                line[i - 1] = '\n';
-                line[i] = '\0';
-                while ((c = fgetc(f)) != EOF && c != '\n')
-                    ;
-                return i;
-            }
+                else if (line[i - 2] != '\t' || line[i - 2] != ' ' || line[i - 2] != '\b') /* Won't give a segmentation fault, 
+                as we know at least one non blank character was // found */
+                {
+                    line[i - 1] = '\n';
+                    line[i] = '\0';
+                    while ((c = fgetc(f)) != EOF && c != '\n')
+                        ;
+                    return i;
+                }
 
-            else // Final case with a space between the comment and current
-            {
-                line[i - 2] = '\n';
-                line[i - 1] = '\0';
-                while ((c = fgetc(f)) != EOF && c != '\n')
-                    ;
-                return i - 1;
-            }
-                
+                else // Final case with a space between the comment and current
+                {
+                    line[i - 2] = '\n';
+                    line[i - 1] = '\0';
+                    while ((c = fgetc(f)) != EOF && c != '\n')
+                        ;
+                    return i - 1;
+                }
+            }   
         }
 
         else if (i > 0 && line[i - 1] == '/' && c == '*' && *state != IN_COMMENT)
         {
-            *state = IN_COMMENT;
-            line[i - 1] = '\n';
-            line[i] = '\0';
-            while ((c = fgetc(f)) != EOF && c != '\n')
+            if (*string_state != IN_STRING)
             {
-                if (prev == '*' && c == '/')
-                    *state = OUT_OF_COMMENT;
-                prev = c;
+                *state = IN_COMMENT;
+                line[i - 1] = '\n';
+                line[i] = '\0';
+                while ((c = fgetc(f)) != EOF && c != '\n')
+                {
+                    if (prev == '*' && c == '/')
+                        *state = OUT_OF_COMMENT;
+                    prev = c;
+                }
+                return i;
             }
-            return i;
         }
 
         else if (*state == IN_COMMENT)
         {
-            i = 0;
-            line[i] = '\0';
-            prev = c;
-            while ((c = fgetc(f)) != EOF && c != '\n')
+            if (*string_state != IN_STRING)
             {
-                if (prev == '*' && c == '/')
-                    *state = OUT_OF_COMMENT;
+                i = 0;
+                line[i] = '\0';
                 prev = c;
+                while ((c = fgetc(f)) != EOF && c != '\n')
+                {
+                    if (prev == '*' && c == '/')
+                        *state = OUT_OF_COMMENT;
+                    prev = c;
+                }
+                return i;
             }
-            return i;
+        }
+
+        else if (c == '\"' && *string_state != IN_STRING)
+        {
+            *string_state = IN_STRING;
+        }
+
+        else if (c == '\"')
+        {
+            *string_state = OUT_OF_STRING;
         }
 
         line[i] = c;
