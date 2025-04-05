@@ -1,8 +1,18 @@
 #include <stdio.h>
 
 #define IN_COMMENT 1
-#define IN_STAR_COMMENT 2
 #define OUT_OF_COMMENT 0
+#define MAX_LINE_LENGTH 1000
+
+int _getline_without_comments(char line[], int limit, FILE *f, int *state);
+void _printline(char line[], int line_len);
+
+/*
+A program that removes all comments from C source code.
+This program is also being used as a test case to verify it's own behavior:)
+Hence why you see so many more comments than I would conventionally put in a program,
+in kind of a weirder style, to test all the edge cases.
+*/
 
 int main(int argc, char **argv)
 {
@@ -19,75 +29,107 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    int c = fgetc(f);
-    int prev;
+    char line[MAX_LINE_LENGTH];
     int state = OUT_OF_COMMENT;
-    if (c != EOF)
-    {
-        prev = c;
-        putchar(c);
-    }
-
-    else
-    {
-        fclose(f);
-        return 0;
-    }
-
-    while ((c = fgetc(f)) != EOF)
-    {
-        if (prev == '/' && state == OUT_OF_COMMENT)
-        {
-            if (c == '/')
-                state = IN_COMMENT;
-            else if (c == '*')
-                state = IN_STAR_COMMENT;
-            else
-            {
-                // Print both, as we would have ignored previous character initially
-                // putchar(prev);
-                putchar(c);
-            }
-            prev = c;
-        }
-
-        /*
-        Need to be clear to ignore this in case we are in a starred comment,
-        of course
-        */
-        else if ((c == '/' || c == '*' ) && state != IN_STAR_COMMENT)
-        {
-            prev = c;
-            continue;
-        }
-
-        else if (c == '\n' && state != IN_STAR_COMMENT)
-        {
-            prev = c;
-            state = OUT_OF_COMMENT;
-            if (state == OUT_OF_COMMENT)
-                putchar(c);
-        }
-
-        else if (state == IN_STAR_COMMENT && prev == '*' && c == '/')
-        {
-            state = OUT_OF_COMMENT;
-            prev = ' ';
-        }
-
-        else if (state == IN_COMMENT || state == IN_STAR_COMMENT)
-        {
-            prev = c;
-            continue;
-        }
-            
-        else
-        {
-            prev = c;
-            putchar(c);
-        }
-            
-    }
-
+    int line_len;
+    while ((line_len = _getline_without_comments(line, MAX_LINE_LENGTH, f, &state)) != EOF)
+        _printline(line, line_len);
     fclose(f);
+}
+
+
+int _getline_without_comments(char line[], int limit, FILE *f, int *state)
+{
+    int i, c;
+    int found_non_blank = 0;
+    int prev;
+    for (i = 0; i < limit - 1 && ((c = fgetc(f)) != EOF && c != '\n'); i++)
+    {
+        /* Here I am keeping track of if the line will start with a comment or not
+        essentailly, if a line starts with a comment then it should only have blanks
+        behind it */
+        if (c != '\t' || c != ' ' || c != '\b')
+            found_non_blank = 1;
+        // Skip lines starting with a comment, no newline needed. This is the // case
+        if (i > 0 && line[i - 1] == '/' && c == '/' && *state != IN_COMMENT)
+        {
+            if (!found_non_blank)
+            {
+                i = 0;
+                line[i] = '\0';
+                while ((c = fgetc(f)) != EOF && c != '\n') // Consume rest of line
+                    ;
+                return i;
+            }
+
+            else if (line[i - 2] != '\t' || line[i - 2] != ' ' || line[i - 2] != '\b') /* Won't give a segmentation fault, 
+            as we know at least one non blank character was // found */
+            {
+                line[i - 1] = '\n';
+                line[i] = '\0';
+                while ((c = fgetc(f)) != EOF && c != '\n')
+                    ;
+                return i;
+            }
+
+            else // Final case with a space between the comment and current
+            {
+                line[i - 2] = '\n';
+                line[i - 1] = '\0';
+                while ((c = fgetc(f)) != EOF && c != '\n')
+                    ;
+                return i - 1;
+            }
+                
+        }
+
+        else if (i > 0 && line[i - 1] == '/' && c == '*' && *state != IN_COMMENT)
+        {
+            *state = IN_COMMENT;
+            line[i - 1] = '\n';
+            line[i] = '\0';
+            while ((c = fgetc(f)) != EOF && c != '\n')
+            {
+                if (prev == '*' && c == '/')
+                    *state = OUT_OF_COMMENT;
+                prev = c;
+            }
+            return i;
+        }
+
+        else if (*state == IN_COMMENT)
+        {
+            i = 0;
+            line[i] = '\0';
+            prev = c;
+            while ((c = fgetc(f)) != EOF && c != '\n')
+            {
+                if (prev == '*' && c == '/')
+                    *state = OUT_OF_COMMENT;
+                prev = c;
+            }
+            return i;
+        }
+
+        line[i] = c;
+    }
+
+    if (c == '\n')
+    {
+        line[i++] = c;
+    }
+        
+    line[i] = '\0';
+    if (c == EOF)
+    {
+        _printline(line, i); // Calling printline internally here because we want to print extra in case of EOF
+        return c;
+    }
+    return i;
+}
+
+void _printline(char line[], int line_len)
+{
+    for (int i = 0; i < line_len; i++)
+        putchar(line[i]);
 }
